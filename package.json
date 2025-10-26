@@ -1,0 +1,27 @@
+{
+  "name": "currency-converter-api",
+  "version": "1.0.0",
+  "description": "Build a RESTful API that fetches country data from an external API, stores it in a database, and provides CRUD operations.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Uthmanduro/Currency-Converter-API.git"
+  },
+  "author": "Uthman Durosinlohun",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Uthmanduro/Currency-Converter-API/issues"
+  },
+  "homepage": "https://github.com/Uthmanduro/Currency-Converter-API#readme",
+  "dependencies": {
+    "axios": "^1.12.2",
+    "canvas": "^3.2.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "mysql2": "^3.15.3",
+    "sequelize": "^6.37.7"
+  }
+}
