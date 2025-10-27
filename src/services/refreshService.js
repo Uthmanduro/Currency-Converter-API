@@ -88,28 +88,42 @@ async function refreshAll() {
     };
   });
 
-  // 3. upsert within transaction
+  // 3. Batch upsert (instead of looping)
   const transaction = await sequelize.transaction();
   try {
-    for (const rec of records) {
-      // case-insensitive match by name
-      const existing = await Country.findOne({
-        where: sequelize.where(
-          sequelize.fn('lower', sequelize.col('name')),
-          rec.name.toLowerCase()
-        ),
-        transaction,
-      });
+    // Fetch existing names (case-insensitive match)
+    const existingCountries = await Country.findAll({
+      attributes: ['id', 'name'],
+      transaction,
+    });
 
-      if (existing) {
-        // update
-        await existing.update(rec, { transaction });
+    const existingMap = new Map(
+      existingCountries.map((c) => [c.name.toLowerCase(), c.id])
+    );
+
+    const toUpdate = [];
+    const toInsert = [];
+
+    for (const rec of records) {
+      if (existingMap.has(rec.name.toLowerCase())) {
+        rec.id = existingMap.get(rec.name.toLowerCase());
+        toUpdate.push(rec);
       } else {
-        await Country.create(rec, { transaction });
+        toInsert.push(rec);
       }
     }
 
-    // update metadata last_refreshed_at
+    // Bulk create new countries
+    if (toInsert.length) {
+      await Country.bulkCreate(toInsert, { transaction });
+    }
+
+    // Bulk update existing ones
+    for (const rec of toUpdate) {
+      await Country.update(rec, { where: { id: rec.id }, transaction });
+    }
+
+    // Update metadata once
     await Metadata.upsert(
       { key: 'last_refreshed_at', value: now.toISOString() },
       { transaction }
